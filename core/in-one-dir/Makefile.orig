@@ -1,0 +1,36 @@
+CPP=c++
+BUILD_FLAGS=-g -O3 -Wall -DPIPE_NOT_EFD -Wno-deprecated
+ARCH=i686
+
+all:	libUF.so
+
+UF.o:	UF.C UF.H
+	$(CPP) $(BUILD_FLAGS) -c -o UF.o UF.C -march=$(ARCH)
+#$(CPP) $(BUILD_FLAGS) -c -o UF.o UF.C -march=$(ARCH) 
+
+UFIO.o:	UFIO.C UFIO.H UF.H
+	$(CPP) $(BUILD_FLAGS) -c -o UFIO.o UFIO.C -march=$(ARCH)
+
+UFStats.o:	UFStats.C UFIO.H UF.H
+	$(CPP) $(BUILD_FLAGS) -c -o UFStats.o UFStats.C -march=$(ARCH)
+
+UFStatSystem.o:	UFStatSystem.C UFStats.H UFIO.H UF.H
+	$(CPP) $(BUILD_FLAGS) -c -o UFStatSystem.o UFStatSystem.C -march=$(ARCH)
+
+UFConnectionPoolImpl.o:	UFConnectionPoolImpl.C UFIO.H UF.H UFStats.H
+	$(CPP) $(BUILD_FLAGS) -c -o UFConnectionPoolImpl.o UFConnectionPoolImpl.C -march=$(ARCH)
+
+UFPC.o:	UFPC.C UF.H
+	$(CPP) $(BUILD_FLAGS) -c -o UFPC.o UFPC.C -march=$(ARCH)
+
+UFServer.o:	UFServer.C UF.H
+	$(CPP) $(BUILD_FLAGS) -c -o UFServer.o UFServer.C -march=$(ARCH)
+
+UFConf.o:	UFConf.C UF.H
+	$(CPP) $(BUILD_FLAGS) -c -o UFConf.o UFConf.C -march=$(ARCH)
+
+libUF.so:	UFIO.o UF.o UFConnectionPoolImpl.o UFConf.o UFStats.o UFPC.o UFStatSystem.o UFServer.o
+	$(CPP) -shared $(BUILD_FLAGS) -o libUF.so UFConf.o UFServer.o UFPC.o UFStatSystem.o UFConnectionPoolImpl.o UFStats.o UFIO.o UF.o -L/usr/local/lib -lpthread -march=$(ARCH)
+
+clean: 
+	rm *.o *.so
